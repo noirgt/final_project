@@ -1,0 +1,8 @@
+endpoint   = "storage.yandexcloud.net"
+bucket     = "noirgt-infra-bucket"
+region     = "ru-central1"
+access_key = "my_access_key"
+secret_key = "my_secret_key"
+
+skip_region_validation      = true
+skip_credentials_validation = true
