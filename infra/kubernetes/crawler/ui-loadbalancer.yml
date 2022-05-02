@@ -7,8 +7,10 @@ metadata:
     app: crawler
     component: ui
 spec:
+  type: LoadBalancer
   ports:
-  - port: 8000
+  - port: 80
+    nodePort: 32095
     protocol: TCP
     targetPort: 8000
   selector:
