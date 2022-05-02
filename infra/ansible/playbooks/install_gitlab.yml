@@ -1,0 +1,55 @@
+---
+- name: Install Docker for Gitlab
+  hosts: 
+    - gitlab
+    - runner
+  become: true
+  
+  roles:
+    - docker
+
+- name: Install Gitlab with Docker
+  hosts:
+    - gitlab
+  become: true
+
+  tasks:
+    - name: Create dirs for Gitlab volumes
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - /srv/gitlab/config
+        - /srv/gitlab/data
+        - /srv/gitlab/logs
+
+    - name: Start a container with Gitlab
+      docker_container:
+        name: "{{ container_name }}"
+        hostname: "{{ container_name }}"
+        image: 'gitlab/gitlab-ce:latest'
+        ports: 
+          - "80:80"
+          - "443:443"
+          - "2222:22"
+        env:
+          GITLAB_OMNIBUS_CONFIG: |
+            external_url "http://{{ ansible_ssh_host }}"
+        volumes:
+          - /srv/gitlab/config:/etc/gitlab
+          - /srv/gitlab/logs:/var/log/gitlab
+          - /srv/gitlab/data:/var/opt/gitlab
+
+- name: Install Gitlab CI runner with Docker
+  hosts:
+    - runner
+  become: true
+  tasks:
+    - name: Start a container with Gitlab CI runner
+      docker_container:
+        name: "{{ container_name }}"
+        hostname: "{{ container_name }}"
+        image: 'gitlab/gitlab-runner:latest'
+        volumes:
+          - /srv/gitlab-runner/config:/etc/gitlab-runner
+          - /var/run/docker.sock:/var/run/docker.sock

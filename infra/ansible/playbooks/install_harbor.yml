@@ -1,0 +1,42 @@
+---
+- name: Install Docker for Harbor
+  hosts: 
+    - harbor
+  become: true
+  
+  roles:
+    - docker
+
+  tasks:
+    - name: Create dirs for Harbor volumes
+      file:
+        path: "{{ item }}"
+        state: directory
+      with_items:
+        - /opt/harbor
+        - /etc/ssl/certs/harbor
+
+    - name: Unarchive a Harbor archive that needs to be downloaded
+      unarchive:
+        src: "{{ harbor_archive_url }}"
+        dest: /tmp
+        remote_src: yes
+
+    - name: Copy config file of Harbor
+      template:
+        src: "../templates/harbor.yml.j2"
+        dest:  "/tmp/harbor/harbor.yml"
+
+    - name: Copy directory with SSL-certs
+      copy:
+        src: "../files/harbor_certs/{{ item }}"
+        dest: "/etc/ssl/certs/harbor"
+        owner: root
+        group: root
+        mode: '0600'
+      with_items:
+        - "{{ harbor_ssl_pubkey }}"
+        - "{{ harbor_ssl_privkey }}"
+
+    - name: Run a script for install Harbor
+      command: bash /tmp/harbor/install.sh
