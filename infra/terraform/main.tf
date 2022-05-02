@@ -70,3 +70,12 @@ module "ansible-harbor" {
     module.ansible-gitlab
   ]
 }
+
+module "kubernetes" {
+  source                   = "./modules/kubernetes"
+  name                     = "kubernetes-cluster"
+  number_workers           = 2
+  zone                     = var.zone
+  network_id               = module.vpc[0].vm-network.id
+  subnet_id                = var.subnet_id == false ? module.vpc[0].vm-subnet.id : var.subnet_id
+}
