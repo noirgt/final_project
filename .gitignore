@@ -12,3 +12,4 @@ variables.json
 .cache
 .pytest_cache
 .env
+harbor_certs/*
