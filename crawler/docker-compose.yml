@@ -1,0 +1,59 @@
+version: '3.3'
+services:
+  crawler_db:
+    image: mongo:${MONGO_VERSION}
+    volumes:
+      - crawler_db:/data/db
+    networks:
+      crawler_net:
+        aliases:
+          - crawler_db
+          - crawler_ui_db
+
+  rabbitmq:
+    image: bitnami/rabbitmq:${RABBITMQ_VERSION}
+    environment:
+      - RABBITMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+    networks:
+      crawler_net:
+        aliases:
+          - crawler_mq
+
+  app:
+    image: noirgt/crawler-app:${CRAWLER_APP_VERSION}
+    ports:
+      - ${APP_PORT}:8000
+    environment:
+      - RMQ_USERNAME=${RABBITMQ_USERNAME}
+      - RMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - URL=${URL}
+      - CHECK_INTERVAL=${CHECK_INTERVAL}
+      - EXCLUDE_URLS=${EXCLUDE_URLS}
+    networks:
+      - crawler_net
+    depends_on:
+      - crawler_db
+      - rabbitmq
+
+  ui:
+    image: noirgt/crawler-ui:${CRAWLER_UI_VERSION}
+    ports:
+      - ${UI_PORT}:8000
+    networks:
+      - crawler_net
+    depends_on:
+      - app
+
+volumes:
+  crawler_db:
+
+networks:
+ crawler_net:
+   driver: bridge
+   driver_opts:
+     com.docker.monwork.enable_ipv6: 'false'
+   ipam:
+     driver: default
+     config:
+      - subnet: 10.11.1.0/24
