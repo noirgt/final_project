@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata: # Блок метаданных деплоя
+  name: ui
+  labels:
+    app: crawler
+    component: ui
+spec: # Блок спецификации деплоя
+  replicas: 2
+  selector:
+    matchLabels:
+      app: crawler
+      component: ui
+  template: # Блок описания POD-ов
+    metadata:
+      name: ui-pod
+      labels:
+        app: crawler
+        component: ui
+    spec:
+      containers:
+      - image: noirgt/crawler-ui # Не забудьте подставить свой образ
+        name: ui
+        env:
+        - name: MONGO
+          value: crawler-ui-db
+        - name: MONGO_PORT
+          value: "27017"

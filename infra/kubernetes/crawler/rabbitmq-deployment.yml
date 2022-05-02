@@ -1,0 +1,31 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: rabbitmq
+  labels:
+    app: crawler
+    component: rabbitmq
+    crawler-mq: "true"
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crawler
+      component: rabbitmq
+  template:
+    metadata:
+      name: rabbitmq-pod
+      labels:
+        app: crawler
+        component: rabbitmq
+        crawler-mq: "true"
+    spec:
+      containers:
+      - image: rabbitmq:3.8.29
+        name: rabbitmq
+        env:
+        - name: RABBITMQ_USERNAME
+          value: crawler
+        - name: RABBITMQ_PASSWORD
+          value: crawler

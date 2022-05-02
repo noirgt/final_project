@@ -1,0 +1,37 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: app
+  labels:
+    app: crawler
+    component: app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: crawler
+      component: app
+  template:
+    metadata:
+      name: app-pod
+      labels:
+        app: crawler
+        component: app
+    spec:
+      containers:
+      - image: noirgt/crawler-app
+        name: app
+        env:
+        - name: MONGO
+          value: crawler-app-db
+        - name: MONGO_PORT
+          value: "27017"
+        - name: RMQ_HOST
+          value: crawler-mq
+        - name: URL
+          value: "https://vitkhab.github.io/search_engine_test_site/"
+        - name: CHECK_INTERVAL
+          value: "30"
+        - name: EXCLUDE_URLS
+          value: ".*github.com"
