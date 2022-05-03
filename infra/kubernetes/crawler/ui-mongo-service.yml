@@ -6,7 +6,7 @@ metadata:
   labels:
     app: crawler
     component: mongo
-    #crawler-ui-db: "true"
+    crawler-ui-db: "true"
 spec:
   ports:
   - port: 27017
@@ -15,4 +15,4 @@ spec:
   selector:
     app: crawler
     component: mongo
-    #crawler-ui-db: "true"
+    crawler-ui-db: "true"
