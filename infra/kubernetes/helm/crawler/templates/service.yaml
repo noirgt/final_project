@@ -1,0 +1,27 @@
+{{- range $component, $params := .Values }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ $component }}
+  labels:
+    app: crawler
+    component: {{ $component }}
+spec:
+  {{- if eq $component "ui" }}
+  type: LoadBalancer
+  ports:
+  - port: 80
+    nodePort: 32095
+    protocol: TCP
+    targetPort: {{ $.Values.ui.service_port }}
+  {{- else }}
+  ports:
+  - port: {{ $params.service_port }}
+    protocol: TCP
+    targetPort: {{ $params.service_port }}
+  {{- end }}
+  selector:
+    app: crawler
+    component: {{ $component }}
+{{- end }}

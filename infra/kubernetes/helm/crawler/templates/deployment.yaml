@@ -1,0 +1,49 @@
+{{- range $component, $params := .Values }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ $component }}
+  labels:
+    app: {{ $.Chart.Name }}
+    component: {{ $component }}
+spec:
+  replicas: {{ $params.replicas }}
+  selector:
+    matchLabels:
+      app: {{ $.Chart.Name }}
+      component: {{ $component }}
+  template:
+    metadata:
+      name: {{ $component }}-pod
+      labels:
+        app: {{ $.Chart.Name }}
+        component: {{ $component }}
+    spec:
+      containers:
+      - image: {{ $params.image }}
+        name: {{ $component }}
+        {{- if $params.env }}
+        env:
+        {{- range $name, $value := $params.env }}
+        - name: {{ $name }}
+          value: {{ $value | quote }}
+        {{- end }}
+        {{- end }}
+      {{- if $params.volumes }}
+        volumeMounts:
+        {{- range $params.volumes }}
+        {{- range $volume, $path := . }}
+        - name: {{ $volume }}
+          mountPath: {{ $path }}
+        {{- end }}
+        {{- end }}
+      volumes:
+      {{- range $params.volumes }}
+      {{- range $volume, $path := . }}
+      - name: {{ $volume }}
+        emptyDir: {}
+      {{- end }}
+      {{- end }}
+      {{- end }}
+{{- end }}
