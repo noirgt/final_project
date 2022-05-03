@@ -24,8 +24,3 @@ spec:
       containers:
       - image: rabbitmq:3.8.29
         name: rabbitmq
-        env:
-        - name: RABBITMQ_USERNAME
-          value: crawler
-        - name: RABBITMQ_PASSWORD
-          value: crawler
