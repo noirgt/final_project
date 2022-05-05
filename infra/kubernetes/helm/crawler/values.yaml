@@ -1,34 +1,56 @@
-app:
-  replicas: 1
-  image: noirgt/crawler-app
-  service_port: 8000
-  env: {
-    MONGO: "mongo",
-    MONGO_PORT: "27017",
-    RMQ_HOST: "rabbitmq",
-    URL: "https://vitkhab.github.io/search_engine_test_site/",
-    CHECK_INTERVAL: "60",
-    EXCLUDE_URLS: ".*github.com"
-    }
+monitoring:
+  enabled: true
 
-ui:
-  replicas: 2
-  image: noirgt/crawler-ui
-  service_port: 8000
-  env: {
-    MONGO: "mongo",
-    MONGO_PORT: "27017"
-  }
+ingress_nginx:
+  enabled: true
+  tls:
+    enabled: false
 
-mongo:
-  replicas: 1
-  image: mongo:3.2
-  service_port: 27017
-  volumes: [
-    {mongo-persistent-storage: "/data/db"}
-  ]
+#crawler_domain: doublespace.ru
+admin_email: noirgt@mail.ru
 
-rabbitmq:
-  replicas: 1
-  image: rabbitmq:3.8.29
-  service_port: 5672
+crawler_components:
+  app:
+    replicas: 1
+    image: noirgt/crawler-app
+    service_port: 8000
+    env:
+      MONGO: mongo
+      MONGO_PORT: 27017
+      RMQ_HOST: rabbitmq
+      URL: https://vitkhab.github.io/search_engine_test_site/
+      CHECK_INTERVAL: 60
+      EXCLUDE_URLS: .*github.com
+
+  ui:
+    replicas: 2
+    image: noirgt/crawler-ui
+    service_port: 8000
+    env: 
+      MONGO: mongo
+      MONGO_PORT: 27017
+
+  mongo:
+    replicas: 1
+    image: mongo:3.2
+    service_port: 27017
+    volumes:
+      - mongo-persistent-storage: /data/db
+
+  rabbitmq:
+    replicas: 1
+    image: rabbitmq:3.8.29
+    service_port: 5672
+
+kube-prometheus-stack:
+  prometheus:
+    prometheusSpec:
+      additionalScrapeConfigs:
+      - job_name: 'crawler-app'
+        metrics_path: /metrics
+        static_configs:
+        - targets: ['app:8000']
+      - job_name: 'crawler-ui'
+        metrics_path: /metrics
+        static_configs:
+        - targets: ['ui:8000']
