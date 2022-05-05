@@ -13,3 +13,5 @@ variables.json
 .pytest_cache
 .env
 harbor_certs/*
+charts/*
+Chart.lock
