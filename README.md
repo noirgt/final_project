@@ -100,3 +100,22 @@ harbor_ssl_pubkey: cert.pem
 harbor_ssl_privkey: privkey.pem
 ```
 
+## Kubernetes:
+Для запуска проекта в кластере Kubernetes Yandex Cloud необходимо:
+
+1. Скопировать на локальную машину файлы конфигурации Kubernetes, для управления кластером:
+```bash
+yc managed-kubernetes cluster get-credentials kubernetes-cluster --external
+```
+2. Установить **Nginx Ingress** и **Cert Manager**:
+```bash
+helm install ingress-nginx ingress-nginx/ingress-nginx
+
+kubectl apply -f https://github.com/jetstack/cert-manager/releases/download/v1.6.1/cert-manager.yaml
+```
+3. Выполнить деплой проекта **Crawler**:
+```bash
+kubectl create namespace prod
+
+cd infra/kubernetes/helm/crawler && helm dependency build && helm install -n prod crawler .
+```
