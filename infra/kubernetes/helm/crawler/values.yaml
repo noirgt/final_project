@@ -54,3 +54,15 @@ kube-prometheus-stack:
         metrics_path: /metrics
         static_configs:
         - targets: ['ui:8000']
+  grafana:
+    additionalDataSources:
+      - name: Loki
+        type: loki
+        access: proxy
+        uid: "zefPU5_7z"
+        isDefault: false
+        url: http://{{ .Release.Name }}-loki:3100
+
+promtail:
+  config:
+    lokiAddress: http://{{ .Release.Name }}-loki:3100/loki/api/v1/push
