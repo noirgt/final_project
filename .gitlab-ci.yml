@@ -1,0 +1,79 @@
+image: docker:latest
+
+stages:
+  - kube
+  - build
+  - test
+  - push
+  - deploy
+
+variables:
+  CI_HARBOR: 'hub.doublespace.ru'
+  CI_REGISTRY_IMAGE: 'hub.doublespace.ru'
+  TAG: $CI_REGISTRY_IMAGE/prod/crawler
+  TAG_LATEST: $CI_REGISTRY_IMAGE/prod/crawler-COMPONENT:latest
+  TAG_COMMIT: $CI_REGISTRY_IMAGE/prod/crawler-COMPONENT:$CI_COMMIT_SHORT_SHA
+
+build_application:
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - cd ./crawler/app
+    - docker build -t $TAG-app:$CI_COMMIT_SHORT_SHA -t $TAG-app:latest .
+
+build_ui:
+  stage: build
+  services:
+    - docker:dind
+  script:
+    - cd ./crawler/ui
+    - docker build -t $TAG-ui:$CI_COMMIT_SHORT_SHA -t $TAG-ui:latest .
+
+test_application:
+  stage: test
+  services:
+    - docker:dind
+  script:
+    - docker run --rm $TAG-app:latest python3 -m unittest discover -s tests/
+
+test_ui:
+  stage: test
+  services:
+    - docker:dind
+  script:
+    - docker run --rm $TAG-ui:latest python3 -m unittest discover -s tests/
+
+push_application:
+  stage: push
+  services:
+    - docker:dind
+  script:
+    - docker login -u $HARBOR_LOGIN -p $HARBOR_PASS $CI_HARBOR
+    - export COMPONENT=app
+    - docker push $TAG-${COMPONENT}:latest
+    - docker push $TAG-${COMPONENT}:$CI_COMMIT_SHORT_SHA
+    - docker rmi $TAG-${COMPONENT}:latest
+    - docker rmi $TAG-${COMPONENT}:$CI_COMMIT_SHORT_SHA
+
+push_ui:
+  stage: push
+  services:
+    - docker:dind
+  script:
+    - docker login -u $HARBOR_LOGIN -p $HARBOR_PASS $CI_HARBOR
+    - export COMPONENT=ui
+    - docker push $TAG-${COMPONENT}:latest
+    - docker push $TAG-${COMPONENT}:$CI_COMMIT_SHORT_SHA
+    - docker rmi $TAG-${COMPONENT}:latest
+    - docker rmi $TAG-${COMPONENT}:$CI_COMMIT_SHORT_SHA
+
+deploy:
+  stage: deploy
+  services: 
+    - alpine/helm:3.2.1
+  script:
+    - helm upgrade crawler ./infra/kubernetes/helm/crawler --install --values=./infra/kubernetes/helm/crawler/values.yaml --namespace prod
+  rules:
+    - if: $CI_COMMIT_BRANCH == 'main'
+      when: manual
