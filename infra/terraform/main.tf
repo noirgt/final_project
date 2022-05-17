@@ -29,8 +29,7 @@ module "vpc" {
 locals {
   vms                      = {
     "gitlab"               : {"cpu": 4, "memory": 4, "ip_static": true},
-    "runner"               : {"cpu": 2, "memory": 2, "ip_static": true},
-    "harbor"               : {"cpu": 2, "memory": 2, "ip_static": true},
+    "harbor"               : {"cpu": 2, "memory": 2, "ip_static": true}
   }
 }
 
