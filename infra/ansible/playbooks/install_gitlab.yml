@@ -48,6 +48,7 @@
     - name: Start a container with Gitlab CI runner
       docker_container:
         name: "{{ container_name }}"
+        privileged: true
         hostname: "{{ container_name }}"
         image: 'gitlab/gitlab-runner:latest'
         volumes:
